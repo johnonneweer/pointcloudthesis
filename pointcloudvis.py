@@ -46,6 +46,8 @@ cloud.columns = ['x', 'y', 'z', 'type']
 labels = set(cloud['type'])
 print(labels)
 
+train, validate, test = np.split(cloud.sample(frac=1), [int(.6*len(cloud)), int(.97*len(cloud))])
+
 #ALL FIGURE SETTINGS
 
 plt.rcParams['figure.figsize'] = [100, 50]
@@ -55,8 +57,17 @@ marker_dict = { 'building':'.','door':'o','roof':'o','window':'o', 'roofdoor':'o
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
+
+# for kind in marker_dict:
+#     d = cloud[cloud.type==kind]
+#     ax.scatter(cloud['x'],cloud['y'],cloud['z'], c=[color_dict[i] for i in cloud['type']], marker = marker_dict[kind])
+#     print(kind)
+
+# plt.show()
+
 for kind in marker_dict:
-    d = cloud[cloud.type==kind]
-    ax.scatter(cloud['x'],cloud['y'],cloud['z'], c=[color_dict[i] for i in cloud['type']], marker = marker_dict[kind])
+    d = test[test.type==kind]
+    ax.scatter(test['x'],test['y'],test['z'], c=[color_dict[i] for i in test['type']], marker = marker_dict[kind])
+    print(kind)
 
 plt.show()
