@@ -11,7 +11,7 @@ from torchvision import datasets, transforms
 # print(x)
 # y = torch.rand(2, 3)
 # print(y)
-
+# # small change
 # x = torch.ones(2,3)
 # y = torch.ones(2,3)*2
 # print(x+y)
