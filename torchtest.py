@@ -88,4 +88,64 @@ def create_nn(batch_size=10, learning_rate=0.01, epochs=10, log_interval=10):
             100. * correct / len(test_loader.dataset)))         
 
 
-create_nn()
+#create_nn()
+
+
+batch_size=1
+loader = train_loader = torch.utils.data.DataLoader(datasets.MNIST('../data', train=True, download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])),batch_size=batch_size, shuffle=True)
+train_iter = iter(train_loader)
+
+print(type(train_iter))
+
+data, target = train_iter.next()
+
+print(data.shape)
+print(target.shape)
+
+class Net(nn.Module):
+        def __init__(self):
+            super(Net, self).__init__()
+            self.fc1 = nn.Linear(28 * 28, 200)
+            self.fc2 = nn.Linear(200, 200)
+            self.fc3 = nn.Linear(200, 10)
+
+        def forward(self, x):
+            x = F.relu(self.fc1(x))
+            x = F.relu(self.fc2(x))
+            x = self.fc3(x)
+            return F.log_softmax(x)
+
+
+net = Net()
+
+epochs = 10
+learning_rate = 0.1
+optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9)
+criterion = nn.NLLLoss()
+
+for epoch in range(epochs):
+    data, target = Variable(data, volatile=True), Variable(target)
+
+    data = data.view(-1, 28 * 28)
+    net_out = net(data)
+
+    print('---------------')
+    print(target)
+    print('---------------')
+    print(net_out)
+    print('-------------------hahahahahaha------')
+    print(data)
+    loss = criterion(net_out, target)
+    loss.backward()
+    optimizer.step()
+
+    print('---------------')
+    print(loss.data.item())
+
+
+# for batch_idx, (data, target) in enumerate(loader[[0]]):
+#     data, target = Variable(data), Variable(target)
+
+#     print(data)
+#     print('000000000')
+#     print(target)

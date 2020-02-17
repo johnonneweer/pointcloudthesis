@@ -1,6 +1,7 @@
 import numpy as np
 import torch.utils.data as data
 import torch._six
+import os
 
 def prepare_data(point_file, number_of_points=None, point_cloud_class=None, segmentation_label_file=None, segmentation_classes_offset=None):
     point_cloud = np.loadtxt(point_file).astype(np.float32)
@@ -20,3 +21,10 @@ def prepare_data(point_file, number_of_points=None, point_cloud_class=None, segm
         return point_cloud, point_cloud_class
     else:
         return point_cloud
+
+dirpath = os.getcwd()
+os.chdir(dirpath + "/pointcloudthesis/B1/")
+
+pc = prepare_data('building_01.txt')
+
+print(pc)

@@ -3,7 +3,9 @@ import glob, os
 
 dirpath = os.getcwd()
 
-os.chdir(dirpath + "/pointcloudthesis/B1/")
+# os.chdir(dirpath + "/pointcloudthesis/B1/")
+os.chdir(dirpath + "/B1/")
+
 all_files = glob.glob("*.txt")
 
 names = []
@@ -47,10 +49,10 @@ cloud.loc[cloud['type'].str.contains('building'), 'buildingclass'] = 1
 
 labels = set(cloud['type'])
 
-train, validate, test = np.split(cloud.sample(frac=1), [int(.6*len(cloud)), int(.97*len(cloud))])
+train, validate, test = np.split(cloud.sample(frac=1), [int(.6*len(cloud)), int(.99*len(cloud))])
 
-train_x = train[['x','y','z']]
-train_y = train[['buildingclass']]
+train_x = test[['x','y','z']]
+train_y = test[['buildingclass']]
 
 print(train_x.describe())
 print(train_y.describe())
@@ -60,6 +62,9 @@ print(train_y.describe())
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
+from fastprogress import master_bar, progress_bar
+from torch.autograd import Variable
 
 # pointnet transformation network 
 
@@ -84,7 +89,8 @@ class TransformationNet(nn.Module):
 
     def forward(self, x):
         num_points = x.shape[1]
-        x = x.transpose(2, 1)
+        print(num_points)
+        # x = x.transpose(2, 1)
         x = F.relu(self.bn_1(self.conv_1(x)))
         x = F.relu(self.bn_2(self.conv_2(x)))
         x = F.relu(self.bn_3(self.conv_3(x)))
@@ -101,5 +107,94 @@ class TransformationNet(nn.Module):
         x = x.view(-1, self.output_dim, self.output_dim) + identity_matrix
         return x
 
-net = TransformationNet(3,3)
-print(net)
+net = TransformationNet(input_dim=3,output_dim=3)
+# print(net)
+
+# model = TransformationNet(3,3)
+# learning_rate = 0.1
+# epochs = 1
+
+# optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+# mb = master_bar(range(epochs))
+
+# for epoch in mb:
+#     epoch_train_loss = []
+#     epoch_train_acc = []
+#     batch_number = 0
+    
+#     points = train_x
+#     targets = train_y
+
+#     optimizer.zero_grad()
+#     model = model.train()
+#     preds = model(points)
+
+batch_size=1
+# loader = train_loader = torch.utils.data.DataLoader(datasets.MNIST('../data', train=True, download=True,transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])),batch_size=batch_size, shuffle=True)
+# train_iter = iter(train_loader)
+
+# print(type(train_iter))
+
+# data, target = train_iter.next()
+
+class Net(nn.Module):
+        def __init__(self):
+            super(Net, self).__init__()
+            self.fc1 = nn.Linear(3 * 83695, 200)
+            self.fc2 = nn.Linear(200, 200)
+            self.fc3 = nn.Linear(200, 10)
+
+        def forward(self, x):
+            x = F.relu(self.fc1(x))
+            x = F.relu(self.fc2(x))
+            x = self.fc3(x)
+            return F.log_softmax(x)
+
+
+# net = Net()
+
+# data = torch.tensor(train_x.values)
+# target = torch.tensor(train_y.values)
+
+# print(data.shape)
+# print(target.shape)
+
+train_dataloader = torch.utils.data.DataLoader(train_x, batch_size=batch_size, shuffle=True, num_workers=4)
+
+for data in train_dataloader:
+    points, targets = data
+    print(points.shape)
+    print(points)
+    print(targets)
+    print(targets.shape)
+
+
+epochs = 10
+learning_rate = 0.1
+optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9)
+criterion = nn.NLLLoss()
+
+for epoch in range(epochs):
+    # data, target = Variable(data, volatile=True), Variable(target)
+
+    # data = data.view(-1, 3 * 83695)
+    net_out = net(data)
+
+    print('---------------')
+    print(target)
+    print('---------------')
+    print(net_out)
+    loss = criterion(net_out, target)
+    loss.backward()
+    optimizer.step()
+
+    print('---------------')
+    print(loss.data.item())
+
+
+# for batch_idx, (data, target) in enumerate(loader[[0]]):
+#     data, target = Variable(data), Variable(target)
+
+#     print(data)
+#     print('000000000')
+#     print(target)
