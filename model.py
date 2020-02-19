@@ -3,8 +3,8 @@ import glob, os
 
 dirpath = os.getcwd()
 
-# os.chdir(dirpath + "/pointcloudthesis/B1/")
-os.chdir(dirpath + "/B1/")
+os.chdir(dirpath + "/pointcloudthesis/B1/")
+# os.chdir(dirpath + "/B1/")
 
 all_files = glob.glob("*.txt")
 

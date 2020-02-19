@@ -10,6 +10,7 @@ names = []
 for file in all_files:
     names.append(file)
 
+
 print(names)
 #IMPORT FRAMEWORKS
 import pandas as pd
@@ -24,6 +25,11 @@ for f in all_files:
     frame = pd.read_csv(f)
     frame['filename'] = os.path.basename(f)
     data.append(frame)
+
+testytest = np.loadtxt('building_01.txt', skiprows=1, delimiter=',', usecols=(0,1,2)).astype(np.float32)
+
+print(testytest)
+print('length is: ', len(testytest))
 
 bigframe = pd.concat(data, ignore_index=True)
 
