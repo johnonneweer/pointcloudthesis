@@ -6,12 +6,24 @@ dirpath = os.getcwd()
 os.chdir(dirpath + "/pointcloudthesis/B1/")
 all_files = glob.glob("*.txt")
 
+path = "/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/B1/"
+files = [f for f in glob.glob(path + "**/*", recursive=True)]
+files = [f.replace('/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/', '') for f in files]
+
+print(files)
+print(os.path)
+print(path)
+print(dirpath)
+
+# for f in files:
+#     print(f)
+
 names = []
 for file in all_files:
     names.append(file)
 
 
-print(names)
+print('the filenames are: ',names)
 #IMPORT FRAMEWORKS
 import pandas as pd
 import numpy as np

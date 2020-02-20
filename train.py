@@ -87,10 +87,10 @@ def train(dataset,
         for data in progress_bar(train_dataloader, parent=mb):
             batch_number += 1
             points, targets = data
-            print(points.shape)
-            print(points)
-            print(targets)
-            print(targets.shape)
+            # print(points.shape)
+            # print(points)
+            # print(targets)
+            # print(targets.shape)
             if torch.cuda.is_available():
                 points, targets = points.cuda(), targets.cuda()
             if points.shape[0] <= 1:

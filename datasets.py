@@ -38,26 +38,26 @@ class DublinCityDataset(data.Dataset):
         
         category_file = os.path.join(self.dataset_folder, 'mappingtocategory.txt')
 
-        print(category_file)
-        print('--------')
+        # print(category_file)
+        # print('--------')
 
         self.folders_to_classes_mapping = {}
         self.segmentation_classes_offset = {}
 
         with open(category_file, 'r') as fid:
             reader = csv.reader(fid, delimiter='\t')
-            print(reader)
-            print('-------')
+            # print(reader)
+            # print('-------')
 
 
             offset_seg_class = 0
             for k, row in enumerate(reader):
                 self.folders_to_classes_mapping[row[1]] = k
-                print('folders to classes mapping is')
-                print(self.folders_to_classes_mapping)
+                # print('folders to classes mapping is')
+                # print(self.folders_to_classes_mapping)
                 self.segmentation_classes_offset[row[1]] = offset_seg_class
-                print('segmentation classes offset is')
-                print(self.segmentation_classes_offset)
+                # print('segmentation classes offset is')
+                # print(self.segmentation_classes_offset)
                 offset_seg_class += self.PER_CLASS_NUM_SEGMENTATION_CLASSES[row[0]]
         
         if self.train:
@@ -76,10 +76,10 @@ class DublinCityDataset(data.Dataset):
                                   folder,
                                   'points',
                                   '%s.txt' % file)
-        print(point_file)
+        # print(point_file)
         segmentation_label_file = os.path.join(self.dataset_folder,
                                                folder,
-                                               'points_label',
+                                               'points',
                                                '%s.txt' % file)
         point_cloud_class = self.folders_to_classes_mapping[folder]
         if self.task == 'classification':
@@ -103,15 +103,15 @@ class DublinCityDataset(data.Dataset):
                      point_cloud_class=None,
                      segmentation_label_file=None,
                      segmentation_classes_offset=None):
-        point_cloud = np.loadtxt(point_file, skiprows=1, delimiter=',', usecols=(0,1,2)).astype(np.float32)
-        print('the pointcloud is: ')
-        print(point_cloud)
+        point_cloud = np.loadtxt(point_file, usecols=(0,1,2)).astype(np.float32)
+        # print('the pointcloud is: ')
+        # print(point_cloud)
         if number_of_points:
             sampling_indices = np.random.choice(point_cloud.shape[0], number_of_points)
             point_cloud = point_cloud[sampling_indices, :]
         point_cloud = torch.from_numpy(point_cloud)
         if segmentation_label_file:
-            segmentation_classes = np.loadtxt(segmentation_label_file).astype(np.int64)
+            segmentation_classes = np.loadtxt(segmentation_label_file, usecols=(3)).astype(np.int64)
             if number_of_points:
                 segmentation_classes = segmentation_classes[sampling_indices]
             segmentation_classes = segmentation_classes + segmentation_classes_offset -1
