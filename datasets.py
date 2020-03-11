@@ -108,6 +108,10 @@ class DublinCityDataset(data.Dataset):
         # print(point_cloud)
         if number_of_points:
             sampling_indices = np.random.choice(point_cloud.shape[0], number_of_points)
+            print(sampling_indices)
+            print(sampling_indices.shape)
+            print('000000')
+            print(point_cloud.shape[0])
             point_cloud = point_cloud[sampling_indices, :]
         point_cloud = torch.from_numpy(point_cloud)
         if segmentation_label_file:
