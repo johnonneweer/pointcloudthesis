@@ -57,7 +57,7 @@ class BasePointNet(nn.Module):
         self.conv_3 = nn.Conv1d(64, 64, 1)
         self.conv_4 = nn.Conv1d(64, 128, 1)
         self.conv_5 = nn.Conv1d(128, 1024, 1)
-
+ 
         self.bn_1 = nn.BatchNorm1d(64)
         self.bn_2 = nn.BatchNorm1d(64)
         self.bn_3 = nn.BatchNorm1d(64)
