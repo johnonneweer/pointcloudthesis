@@ -13,22 +13,31 @@ command = ["las2txt"]
 command.append("-i")
 command.append(' '+'inputtest')
 
-almere = pd.read_csv("/Users/john/Downloads/files_almere.csv")
-almere = almere.iloc[:,[2, 4, 5]]
+adress = pd.read_csv("/Users/john/Downloads/files_almere.csv")
+#adress = adress.drop_duplicates(subset='BuildingId', keep = 'first', inplace=True)
+
+adress = adress.sample(n = 5)
+adress = adress.iloc[:,[2, 4, 5]]
+
+
+
 # add parameters
 
 print("HET BEGIN")
-for index, row in almere.iterrows():
+
+file_path = r"C:\Users\Sustainables\Documents\Thesis\S_26AZ2.LAZ"
+output_directory = r"C:\Users\Sustainables\Documents\Thesis\Data\AHN3\almere"
+
+for index, row in adress.iterrows():
     print("next file")
+    print(index)
     # print(row[0], row[1], row[2])
     min_x = row[1] - 10
     max_x = row[1] + 10
     min_y = row[2] - 10
     max_y = row[2] + 10
 
-    file_path = "file_path"
-    output_directory = "output_dir"
-    output_name = "output_name"
+    output_name = int(row[0])
     command = []
     #file path is the path to the file
     command.append("lasview")
@@ -57,6 +66,7 @@ for index, row in almere.iterrows():
     # print(command)
     
     command_line = " ".join([str(elem) for elem in command])
+    print(command_line)
     os.system(command_line)
 
 
