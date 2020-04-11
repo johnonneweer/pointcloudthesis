@@ -1,137 +1,72 @@
 import sys, os, subprocess
 import pandas as pd
+import time
 
-# this defines the LAStoos\bin\las2txt.exe path and writes it to an array
-lastools_path = r"C:\Users\Sustainables\Documents\Thesis\LAStools\bin"
+#timeit
+start_time = time.time()
 
-las2txt_path = lastools_path+"\\las2txt.exe"
+#function
+def snip_files(adress, file_path, output_directory, seg):
+    file_number = 0
+    for index, row in adress.iterrows():
+        file_number += 1
+        print(str(seg) + ' file: '+str(file_number)+' of '+str(number_files))
+        # print(row[0], row[1], row[2])
+        min_x = row[1] - 10
+        max_x = row[1] + 10
+        min_y = row[2] - 10
+        max_y = row[2] + 10
 
-#START
-command = ["las2txt"]
+        output_name = int(row[0])
+        command = []
+        #file path is the path to the file
+        command.append("las2txt")
+        command.append("-i")
+        command.append(file_path)
 
-# add input LiDAR
-command.append("-i")
-command.append(' '+'inputtest')
+        command.append("-parse xyzRGBcia")
 
-adress = pd.read_csv("/Users/john/Downloads/files_almere.csv")
-#adress = adress.drop_duplicates(subset='BuildingId', keep = 'first', inplace=True)
+        #choose seperator
+        command.append("-sep comma")
+        #Rd values
+        command.append("-inside")
+        command.append(min_x)
+        command.append(min_y)
+        command.append(max_x)
+        command.append(max_y)
 
-adress = adress.sample(n = 5)
-adress = adress.iloc[:,[2, 4, 5]]
+        #output_directory is de output directory
+        command.append("-odir")
+        command.append(output_directory)
 
+        #output_name moet de naam van de postcode huisnum combinatie
+        command.append("-o")
+        command.append(output_name)
+        
+        command_line = " ".join([str(elem) for elem in command])
+        os.system(command_line)
 
+#Program Settings
 
-# add parameters
+number_files = 1800
 
-print("HET BEGIN")
+maps = ['\pijp', '\gein', '\hoogkarspel', r"\utrecht"]
+files = ['\S_25GN1.LAZ', '\S_25GZ2.LAZ', '\S_20AN1.LAZ', '\S_31HZ2.LAZ']
+lists = ['\list_pijp1073', '\list_gein1106', '\list_hoogkarspel', '\list_utrecht3582']
 
-file_path = r"C:\Users\Sustainables\Documents\Thesis\S_26AZ2.LAZ"
-output_directory = r"C:\Users\Sustainables\Documents\Thesis\Data\AHN3\almere"
-
-for index, row in adress.iterrows():
-    print("next file")
-    print(index)
-    # print(row[0], row[1], row[2])
-    min_x = row[1] - 10
-    max_x = row[1] + 10
-    min_y = row[2] - 10
-    max_y = row[2] + 10
-
-    output_name = int(row[0])
-    command = []
-    #file path is the path to the file
-    command.append("lasview")
-    command.append("-i")
-    command.append(file_path)
-
-    command.append("-parse xyzRGBcia")
-
-    #choose seperator
-    command.append("-sep comma")
-    #Rd values
-    command.append("-keep_xy")
-    command.append(min_x)
-    command.append(min_y)
-    command.append(max_x)
-    command.append(max_y)
-
-    #output_directory is de output directory
-    command.append("-odir")
-    command.append(output_directory)
-
-    #output_name moet de naam van de postcode huisnum combinatie
-    command.append("-o")
-    command.append(output_name)
-
-    # print(command)
+for i in range(len(maps)):
+    file_path = r"C:\Users\Sustainables\Documents\Thesis"
+    file_path = file_path + files[i]
+    output_directory = r"C:\Users\Sustainables\Documents\Thesis\Data\AHN3"
+    output_directory = output_directory + maps[i]
+    list_path = r"C:\Users\Sustainables\Documents\Thesis\Data\AHN3"
+    list_path = list_path + lists[i] + '.txt'
     
-    command_line = " ".join([str(elem) for elem in command])
-    print(command_line)
-    os.system(command_line)
+    adress = pd.read_csv(list_path, sep='\\t', engine='python')
+    adress = adress.drop_duplicates(subset=['BuildingId'], keep = 'first', inplace=False)
+    adress = adress.sample(n = number_files)
+    adress = adress.iloc[:,[0, 1, 2]]
 
+    snip_files(adress, file_path,output_directory, maps[i])
 
-# sys.exit()
-
-#finally run las2txt
-#process = subprocess.Popen(command)
-
-# command_length = len(command)
-# command_string = str(command[0])
-# command[0] = command[0].strip('"')
-# for i in range(1, command_length):
-#     command_string = command_string + " " + str(command[i])
-#     command[i] = command[i].strip('"')
-
-
-#RdX RdY PostCode
-# df_test = 
-
-# go to C:\Users\Sustainables\Documents\Thesis\LAStools\bin
-
-#os.system("cd C:\Users\Sustainables\Documents\Thesis\LAStools\bin")
-
-
-# min_x = 147014
-# max_x = 147034
-# min_y = 490087
-# max_y = 490107
-
-
-# file_path = "file_path"
-# output_directory = "output_dir"
-# output_name = "output_name"
-
-# #file path is the path to the file
-# command.append("lasview")
-# command.append("-i")
-# command.append(file_path)
-
-# command.append("-parse xyzRGBcia")
-
-# #choose seperator
-# command.append("-sep comma")
-
-# #Rd values
-# command.append("-keep_xy")
-# command.append(min_x)
-# command.append(min_y)
-# command.append(max_x)
-# command.append(max_y)
-
-# #output_directory is de output directory
-# command.append("-odir")
-# command.append(output_directory)
-
-# #output_name moet de naam van de postcode huisnum combinatie
-# command.append("-o")
-# command.append(output_name)
-
-# print(command)
-
-# command_line = " ".join([str(elem) for elem in command])
-# print(command_line)
-
-# os.system("cd ~/AI")
-
-#os.system("pip install")
-
+print("--- RUNTIME --- %s seconds ---" % (time.time()-start_time))
