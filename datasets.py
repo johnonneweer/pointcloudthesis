@@ -14,8 +14,8 @@ from utils import transform_2d_img_to_point_cloud
 # DEFINE DATASET
 
 class AHN3Dataset(data.Dataset):
-    NUM_CLASSIFICATION_CLASSES = 16
-    NUM_SEGMENTATION_CLASSES = 50
+    NUM_CLASSIFICATION_CLASSES = 1
+    NUM_SEGMENTATION_CLASSES = 5
 
     POINT_DIMENSION = 3
 
@@ -111,6 +111,9 @@ class AHN3Dataset(data.Dataset):
         point_cloud = torch.from_numpy(point_cloud)
         if segmentation_label_file:
             segmentation_classes = np.loadtxt(segmentation_label_file, delimiter=',', usecols=(6)).astype(np.int64)
+            segmentation_classes[segmentation_classes == 6] = 3
+            segmentation_classes[segmentation_classes == 9] = 4
+            segmentation_classes[segmentation_classes == 26] = 5
             if number_of_points:
                 segmentation_classes = segmentation_classes[sampling_indices]
             # not necessary in ahn3 set, I guess 
