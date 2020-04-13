@@ -20,16 +20,13 @@ class AHN3Dataset(data.Dataset):
     POINT_DIMENSION = 3
 
     PER_CLASS_NUM_SEGMENTATION_CLASSES = {
-        'Building': 6,
-        'Vegetation': 1,
-        'Ground': 3,
-        'Other': 1,
+        'almere': 5,
     }
 
-    def __init__(self, dataset_folder, number_of_points=2500, task='classification', train=True):
+    def __init__(self, dataset_folder, number_of_points=2048, task='classification', train=True):
 
         #define the dataset folder where the dataset is in first with 'dataset_folder'
-        # 'dublincity' is the dataset folder
+        # 'ahn3' is the dataset folder
         self.dataset_folder = dataset_folder
         self.number_of_points = number_of_points
         assert task in ['classification', 'segmentation']
@@ -68,18 +65,16 @@ class AHN3Dataset(data.Dataset):
         with open(filelist, 'r') as fid:
             filenames = json.load(fid)
 
-        self.files = [(f.split('/')[1], f.split('/')[2]) for f in filenames]
+        self.files = [(f.split('/')[0], f.split('/')[1]) for f in filenames]
 
     def __getitem__(self, index):
         folder, file = self.files[index]
         point_file = os.path.join(self.dataset_folder,
                                   folder,
-                                  'points',
                                   '%s.txt' % file)
         # print(point_file)
         segmentation_label_file = os.path.join(self.dataset_folder,
                                                folder,
-                                               'points',
                                                '%s.txt' % file)
         point_cloud_class = self.folders_to_classes_mapping[folder]
         if self.task == 'classification':
@@ -103,22 +98,23 @@ class AHN3Dataset(data.Dataset):
                      point_cloud_class=None,
                      segmentation_label_file=None,
                      segmentation_classes_offset=None):
-        point_cloud = np.loadtxt(point_file, usecols=(0,1,2)).astype(np.float32)
+        point_cloud = np.loadtxt(point_file, delimiter=',', usecols=(0,1,2)).astype(np.float32)
         # print('the pointcloud is: ')
         # print(point_cloud)
         if number_of_points:
             sampling_indices = np.random.choice(point_cloud.shape[0], number_of_points)
-            print(sampling_indices)
-            print(sampling_indices.shape)
-            print('000000')
-            print(point_cloud.shape[0])
+            # print(sampling_indices)
+            # print(sampling_indices.shape)
+            # print('-----')
+            # print(point_cloud.shape[0])
             point_cloud = point_cloud[sampling_indices, :]
         point_cloud = torch.from_numpy(point_cloud)
         if segmentation_label_file:
-            segmentation_classes = np.loadtxt(segmentation_label_file, usecols=(3)).astype(np.int64)
+            segmentation_classes = np.loadtxt(segmentation_label_file, delimiter=',', usecols=(6)).astype(np.int64)
             if number_of_points:
                 segmentation_classes = segmentation_classes[sampling_indices]
-            segmentation_classes = segmentation_classes + segmentation_classes_offset -1
+            # not necessary in ahn3 set, I guess 
+            # #segmentation_classes = segmentation_classes + segmentation_classes_offset -1
             segmentation_classes = torch.from_numpy(segmentation_classes)
             return point_cloud, segmentation_classes
         elif point_cloud_class is not None:

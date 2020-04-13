@@ -5,19 +5,19 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import json
 
-dirpath = os.getcwd()
+# dirpath = os.getcwd()
 
-os.chdir(dirpath + "/pointcloudthesis/B1/")
+# os.chdir(dirpath + "/pointcloudthesis/B1/")
 
-path = "/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/B1/"
-path2 = "/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/B1/B/"
-path3 = "/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/dublincity/"
+# path = "/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/B1/"
+# path2 = "/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/B1/B/"
+# path3 = "/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/dublincity/"
 
-buildingfiles = [f for f in glob.glob(path3 + "**/*.txt", recursive=True) if 'building' in f]
-groundfiles = [f for f in glob.glob(path3 + "**/*.txt", recursive=True) if 'ground' in f]
-vegetationfiles = [f for f in glob.glob(path3 + "**/*.txt", recursive=True) if 'vegetation' in f.lower()]
+# buildingfiles = [f for f in glob.glob(path3 + "**/*.txt", recursive=True) if 'building' in f]
+# groundfiles = [f for f in glob.glob(path3 + "**/*.txt", recursive=True) if 'ground' in f]
+# vegetationfiles = [f for f in glob.glob(path3 + "**/*.txt", recursive=True) if 'vegetation' in f.lower()]
 
-files = buildingfiles + groundfiles + vegetationfiles
+# files = buildingfiles + groundfiles + vegetationfiles
 
 
 # files=sorted(np.concatenate((buildingfiles, groundfiles,vegetationfiles), axis=None))
@@ -110,12 +110,34 @@ def create_train_test(buildingfiles,vegetationfiles, groundfiles, save=False):
         outF.close()
     return x_train, x_test
 
-x_train, x_test = create_train_test(buildingfiles, vegetationfiles,groundfiles)
-print('x_train is: ')
-print(x_train)
-print('x_test is: ')
-print(x_test)
+def create_ahn3_train_test(save=False):
+    file_path = "/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/dublincity/"
+    dataset_folder = 'ahn3'
+    folder = 'almere'
+    file_path = os.path.join(dataset_folder, folder, '')
+
+    files = glob.glob(file_path + "**/*.txt", recursive=True)
+    file_list = list(set([(f.split('/')[1]+'/'+f.split('/')[2]) for f in files]))
+    file_list = list(set([(f.split('.')[0]) for f in file_list]))
+
+    train, test = train_test_split(file_list, test_size=0.2)
+
+    if save:
+        outF = open("/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/ahn3/train_test_split/shuffled_train_file_list.json", "w")
+        outF.write(json.dumps(train))
+        outF.close()
+        outF = open("/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/ahn3/train_test_split/shuffled_test_file_list.json", "w")
+        outF.write(json.dumps(test))
+        outF.close()
+    return train, test
+
+train, test = create_ahn3_train_test(save=True)
 
 
 
-    
+
+#x_train, x_test = create_train_test(buildingfiles, vegetationfiles,groundfiles)
+#print('x_train is: ')
+#print(x_train)
+#print('x_test is: ')
+#print(x_test)

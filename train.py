@@ -9,7 +9,7 @@ import numpy as np
 
 from fastprogress import master_bar, progress_bar
 
-from datasets import DublinCityDataset, PointMNISTDataset, ShapeNetDataset
+from datasets import AHN3Dataset ,DublinCityDataset, PointMNISTDataset, ShapeNetDataset
 from model.pointnet import ClassificationPointNet, SegmentationPointNet
 from utils import plot_losses, plot_accuracies
 
@@ -22,7 +22,8 @@ MODELS = {
 DATASETS = {
     'shapenet': ShapeNetDataset,
     'mnist': PointMNISTDataset,
-    'dublincity': DublinCityDataset
+    'dublincity': DublinCityDataset,
+    'ahn3': AHN3Dataset
 }
 
 
@@ -46,6 +47,7 @@ def train(dataset,
     test_dataset = DATASETS[dataset](dataset_folder,
                                      task=task,
                                      train=False,
+                                     
                                      number_of_points=number_of_points)
     test_dataloader = torch.utils.data.DataLoader(test_dataset,
                                                   batch_size=batch_size,
@@ -168,7 +170,7 @@ def train(dataset,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('dataset', type=str, choices=['shapenet', 'mnist', 'dublincity'], help='dataset to train on')
+    parser.add_argument('dataset', type=str, choices=['shapenet', 'mnist', 'dublincity', 'ahn3'], help='dataset to train on')
     parser.add_argument('dataset_folder', type=str, help='path to the dataset folder')
     parser.add_argument('task', type=str, choices=['classification', 'segmentation'], help='type of task')
     parser.add_argument('output_folder', type=str, help='output folder')
