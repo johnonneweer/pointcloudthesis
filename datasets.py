@@ -109,6 +109,7 @@ class AHN3Dataset(data.Dataset):
             # print(point_cloud.shape[0])
             point_cloud = point_cloud[sampling_indices, :]
         point_cloud = torch.from_numpy(point_cloud)
+        
         if segmentation_label_file:
             segmentation_classes = np.loadtxt(segmentation_label_file, delimiter=',', usecols=(6)).astype(np.int64)
             segmentation_classes[segmentation_classes == 6] = 0
