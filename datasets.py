@@ -15,7 +15,7 @@ from utils import transform_2d_img_to_point_cloud
 
 class AHN3Dataset(data.Dataset):
     NUM_CLASSIFICATION_CLASSES = 1
-    NUM_SEGMENTATION_CLASSES = 5
+    NUM_SEGMENTATION_CLASSES = 3
 
     POINT_DIMENSION = 3
 
@@ -55,7 +55,7 @@ class AHN3Dataset(data.Dataset):
                 self.segmentation_classes_offset[row[1]] = offset_seg_class
                 # print('segmentation classes offset is')
                 # print(self.segmentation_classes_offset)
-                offset_seg_class += self.PER_CLASS_NUM_SEGMENTATION_CLASSES[row[0]]
+                #offset_seg_class += self.PER_CLASS_NUM_SEGMENTATION_CLASSES[row[0]]
         
         if self.train:
             filelist = os.path.join(self.dataset_folder, 'train_test_split', 'shuffled_train_file_list.json')
@@ -111,9 +111,11 @@ class AHN3Dataset(data.Dataset):
         point_cloud = torch.from_numpy(point_cloud)
         if segmentation_label_file:
             segmentation_classes = np.loadtxt(segmentation_label_file, delimiter=',', usecols=(6)).astype(np.int64)
-            segmentation_classes[segmentation_classes == 6] = 3
-            segmentation_classes[segmentation_classes == 9] = 4
-            segmentation_classes[segmentation_classes == 26] = 5
+            segmentation_classes[segmentation_classes == 6] = 0
+            print("voor weghalen: " + str(set(segmentation_classes)))
+            segmentation_classes = segmentation_classes[segmentation_classes != 9]
+            print("na weghalen: " + str(set(segmentation_classes)))
+            segmentation_classes[segmentation_classes == 26] = 2
             if number_of_points:
                 segmentation_classes = segmentation_classes[sampling_indices]
             # not necessary in ahn3 set, I guess 

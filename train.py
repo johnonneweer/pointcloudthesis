@@ -134,6 +134,7 @@ def train(dataset,
             if task == 'segmentation':
                 preds = preds.view(-1, train_dataset.NUM_SEGMENTATION_CLASSES)
                 targets = targets.view(-1)
+            print(targets)
             loss = F.nll_loss(preds, targets)
             epoch_test_loss.append(loss.cpu().item())
             preds = preds.data.max(1)[1]
