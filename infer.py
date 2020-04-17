@@ -8,7 +8,7 @@ import torch
 import open3d
 
 from model.pointnet import ClassificationPointNet, SegmentationPointNet
-from datasets import DublinCityDataset, PointMNISTDataset, ShapeNetDataset
+from datasets import DublinCityDataset, PointMNISTDataset, ShapeNetDataset, AHN3Dataset
 
 MODELS = {
     'classification': ClassificationPointNet,
@@ -18,7 +18,8 @@ MODELS = {
 DATASETS = {
     'shapenet': ShapeNetDataset,
     'mnist': PointMNISTDataset,
-    'dublincity': DublinCityDataset
+    'dublincity': DublinCityDataset,
+    'ahn3': AHN3Dataset
 }
 
 
