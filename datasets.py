@@ -17,7 +17,7 @@ class AHN3Dataset(data.Dataset):
     NUM_CLASSIFICATION_CLASSES = 1
     NUM_SEGMENTATION_CLASSES = 3
 
-    POINT_DIMENSION = 6
+    POINT_DIMENSION = 7
 
     def __init__(self, dataset_folder, number_of_points=2048, task='classification', train=True):
 
