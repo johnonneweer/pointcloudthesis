@@ -17,11 +17,7 @@ class AHN3Dataset(data.Dataset):
     NUM_CLASSIFICATION_CLASSES = 1
     NUM_SEGMENTATION_CLASSES = 3
 
-    POINT_DIMENSION = 3
-
-    PER_CLASS_NUM_SEGMENTATION_CLASSES = {
-        'almere': 5,
-    }
+    POINT_DIMENSION = 6
 
     def __init__(self, dataset_folder, number_of_points=2048, task='classification', train=True):
 
@@ -29,33 +25,33 @@ class AHN3Dataset(data.Dataset):
         # 'ahn3' is the dataset folder
         self.dataset_folder = dataset_folder
         self.number_of_points = number_of_points
-        assert task in ['classification', 'segmentation']
+        assert task in ['segmentation']
         self.task = task
         self.train = train
         
-        category_file = os.path.join(self.dataset_folder, 'mappingtocategory.txt')
+        # category_file = os.path.join(self.dataset_folder, 'mappingtocategory.txt')
 
         # print(category_file)
         # print('--------')
 
-        self.folders_to_classes_mapping = {}
-        self.segmentation_classes_offset = {}
+        # self.folders_to_classes_mapping = {}
+        # self.segmentation_classes_offset = {}
 
-        with open(category_file, 'r') as fid:
-            reader = csv.reader(fid, delimiter='\t')
-            # print(reader)
-            # print('-------')
+        # with open(category_file, 'r') as fid:
+        #     reader = csv.reader(fid, delimiter='\t')
+        #     # print(reader)
+        #     # print('-------')
 
 
-            offset_seg_class = 0
-            for k, row in enumerate(reader):
-                self.folders_to_classes_mapping[row[1]] = k
-                # print('folders to classes mapping is')
-                # print(self.folders_to_classes_mapping)
-                self.segmentation_classes_offset[row[1]] = offset_seg_class
-                # print('segmentation classes offset is')
-                # print(self.segmentation_classes_offset)
-                #offset_seg_class += self.PER_CLASS_NUM_SEGMENTATION_CLASSES[row[0]]
+        #     offset_seg_class = 0
+        #     for k, row in enumerate(reader):
+        #         self.folders_to_classes_mapping[row[1]] = k
+        #         # print('folders to classes mapping is')
+        #         # print(self.folders_to_classes_mapping)
+        #         self.segmentation_classes_offset[row[1]] = offset_seg_class
+        #         # print('segmentation classes offset is')
+        #         # print(self.segmentation_classes_offset)
+        #         #offset_seg_class += self.PER_CLASS_NUM_SEGMENTATION_CLASSES[row[0]]
         
         if self.train:
             filelist = os.path.join(self.dataset_folder, 'train_test_split', 'shuffled_train_file_list.json')
@@ -76,7 +72,8 @@ class AHN3Dataset(data.Dataset):
         segmentation_label_file = os.path.join(self.dataset_folder,
                                                folder,
                                                '%s.txt' % file)
-        point_cloud_class = self.folders_to_classes_mapping[folder]
+        # point_cloud_class = self.folders_to_classes_mapping[folder]
+        point_cloud_class = 0
         if self.task == 'classification':
             return self.prepare_data(point_file,
                                      self.number_of_points,
@@ -86,7 +83,7 @@ class AHN3Dataset(data.Dataset):
                                      self.number_of_points,
                                      point_cloud_class=point_cloud_class,
                                      segmentation_label_file=segmentation_label_file,
-                                     segmentation_classes_offset=self.segmentation_classes_offset[folder])
+                                     segmentation_classes_offset=None)
 
     def __len__(self):
         return len(self.files)
@@ -98,36 +95,22 @@ class AHN3Dataset(data.Dataset):
                      point_cloud_class=None,
                      segmentation_label_file=None,
                      segmentation_classes_offset=None):
-        point_cloud = np.loadtxt(point_file, delimiter=',', usecols=(0,1,2)).astype(np.float32)
-        # print('the pointcloud is: ')
-        # print(point_cloud)
+        point_cloud = np.loadtxt(point_file, delimiter=',', usecols=(0,1,2,3,4,5)).astype(np.float32)
+        segmentation_classes = np.loadtxt(segmentation_label_file, delimiter=',', usecols=(6)).astype(np.int64)
+        segmentation_classes[segmentation_classes == 6] = 0
+        segmentation_classes[segmentation_classes == 26] = 2
+        point_cloud = point_cloud[segmentation_classes != 9]
+        segmentation_classes = segmentation_classes[segmentation_classes != 9]
+
         if number_of_points:
             sampling_indices = np.random.choice(point_cloud.shape[0], number_of_points)
-            # print(sampling_indices)
-            # print(sampling_indices.shape)
-            # print('-----')
-            # print(point_cloud.shape[0])
             point_cloud = point_cloud[sampling_indices, :]
+            segmentation_classes = segmentation_classes[sampling_indices]
+
+        segmentation_classes = torch.from_numpy(segmentation_classes)
         point_cloud = torch.from_numpy(point_cloud)
-        
-        if segmentation_label_file:
-            segmentation_classes = np.loadtxt(segmentation_label_file, delimiter=',', usecols=(6)).astype(np.int64)
-            segmentation_classes[segmentation_classes == 6] = 0
-            print("voor weghalen: " + str(set(segmentation_classes)))
-            segmentation_classes = segmentation_classes[segmentation_classes != 9]
-            print("na weghalen: " + str(set(segmentation_classes)))
-            segmentation_classes[segmentation_classes == 26] = 2
-            if number_of_points:
-                segmentation_classes = segmentation_classes[sampling_indices]
-            # not necessary in ahn3 set, I guess 
-            # #segmentation_classes = segmentation_classes + segmentation_classes_offset -1
-            segmentation_classes = torch.from_numpy(segmentation_classes)
-            return point_cloud, segmentation_classes
-        elif point_cloud_class is not None:
-            point_cloud_class = torch.tensor(point_cloud_class)
-            return point_cloud, point_cloud_class
-        else:
-            return point_cloud
+
+        return point_cloud, segmentation_classes
 
 
 class DublinCityDataset(data.Dataset):

@@ -160,16 +160,22 @@ def create_ahn3_windows_2_train_test(save=False):
 
 # train, test = create_ahn3_windows_2_train_test(save=True)
 
-def create_mapping(grid):
+def create_mapping(grid, save=False):
     file_path = r"C:\Users\Sustainables\Documents\Thesis\Code\pointcloudthesis\ahn3"
-    files = glob.glob(file_path + "/" + grid + "/**/*", recursive=True)
+    files = glob.glob(file_path + "/**/*", recursive=True)
     file_list = list(set([(f.split('\\')[8]) for f in files]))
     file_list = list(set([(f.split('.')[0]) for f in file_list]))
 
-    with open(grid +'_mapping.txt','w') as f:
-        f.write('\n'.join(file_list))
+    if save:
+        with open(grid +'_mapping.txt','w') as f:
+            f.write('\n'.join(file_list))
 
-create_mapping('utrecht')
+# create_mapping('utrecht')
+
+file_path = r"C:\Users\Sustainables\Documents\Thesis\Code\pointcloudthesis\ahn3"
+files = glob.glob(file_path + "/**/*", recursive=True)
+
+print(files)
 
 #x_train, x_test = create_train_test(buildingfiles, vegetationfiles,groundfiles)
 #print('x_train is: ')
