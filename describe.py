@@ -3,7 +3,6 @@ import numpy as np
 import glob
 import sys
 
-<<<<<<< HEAD
 path = "/Users/john/AI/Thesis/pointcloudthesis/pointcloudthesis/ahn3"
 path_pijp = "/pijp/"
 path_utrecht = "/utrecht/"
@@ -11,10 +10,7 @@ path_almere = "/almere/"
 path_hoogkarspel = "/hoogkarspel/"
 path_gein = "/gein/"
 
-path_location = path_utrecht
-files = [f for f in glob.glob(path + path_location + "**/*.txt", recursive=True)]
-=======
-win = 1
+win = 0
 
 if win == 1:
     path = r"C:\Users\Sustainables\Documents\Thesis\Data\AHN3"
@@ -25,15 +21,14 @@ if win == 1:
     path_test = r"\test\\"
     
     files = [f for f in glob.glob(path + path_test + "**/*.txt", recursive=True)]
-
 else:
     path = "/Users/john/AI/Thesis/Data/AHN3"
     path_pijp = "/pijp/"
     path_utrecht = "/utrecht/"
     path_almere = "/almere/"
 
-    files = [f for f in glob.glob(path + path_almere + "**/*.txt", recursive=True)]
->>>>>>> 6549a374bacefd69ffc0812b58d35c9152d33e65
+    path_location = path_utrecht
+    files = [f for f in glob.glob(path + path_location + "**/*.txt", recursive=True)]
 
 # sys.exit()
 

@@ -37,7 +37,7 @@ def infer(dataset,
         model.cuda()
     model.load_state_dict(torch.load(model_checkpoint))
 
-    points = DATASETS[dataset].prepare_data(point_cloud_file)
+    points, segmentation_classes = DATASETS[dataset].prepare_data(point_cloud_file)
     points = torch.tensor(points)
     if torch.cuda.is_available():
         points = points.cuda()
@@ -50,6 +50,18 @@ def infer(dataset,
 
     points = points.cpu().numpy().squeeze()
     preds = preds.cpu().numpy()
+
+    count_p_0 = np.count_nonzero(preds == 0)
+    count_p_1 = np.count_nonzero(preds == 1)
+    count_p_2 = np.count_nonzero(preds == 2)
+    count_s_0 = np.count_nonzero(segmentation_classes == 0)
+    count_s_1 = np.count_nonzero(segmentation_classes == 1)
+    count_s_2 = np.count_nonzero(segmentation_classes == 2)
+
+    print(count_p_0,' en ', count_p_1, ' en ', count_p_2)
+    print(count_s_0,' en ', count_s_1, ' en ', count_s_2)
+    print(preds[0:15])
+    print(segmentation_classes[0:15])
 
     if task == 'classification':
         print('Detected class: %s' % preds)
@@ -65,14 +77,14 @@ def infer(dataset,
         rgb = np.array(rgb)
 
         pcd = open3d.PointCloud()
-        pcd.points = open3d.Vector3dVector(points)
+        pcd.points = open3d.Vector3dVector(points[:,0:3])
         pcd.colors = open3d.Vector3dVector(rgb)
         open3d.draw_geometries([pcd])
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('dataset', choices=['shapenet', 'mnist', 'dublincity'], type=str, help='dataset to train on')
+    parser.add_argument('dataset', choices=['shapenet', 'mnist', 'dublincity', 'ahn3'], type=str, help='dataset to train on')
     parser.add_argument('model_checkpoint', type=str, help='dataset to train on')
     parser.add_argument('point_cloud_file', type=str, help='path to the point cloud file')
     parser.add_argument('task', type=str, choices=['classification', 'segmentation'], help='type of task')

@@ -17,7 +17,10 @@ class AHN3Dataset(data.Dataset):
     NUM_CLASSIFICATION_CLASSES = 1
     NUM_SEGMENTATION_CLASSES = 3
 
-    POINT_DIMENSION = 7
+    POINT_DIMENSION = 6
+
+    block_size = 10
+
 
     def __init__(self, dataset_folder, number_of_points=2048, task='classification', train=True):
 
@@ -96,7 +99,109 @@ class AHN3Dataset(data.Dataset):
                      segmentation_label_file=None,
                      segmentation_classes_offset=None):
         point_cloud = np.loadtxt(point_file, delimiter=',', usecols=(0,1,2,3,4,5)).astype(np.float32)
-        segmentation_classes = np.loadtxt(segmentation_label_file, delimiter=',', usecols=(6)).astype(np.int64)
+        segmentation_classes = np.loadtxt(point_file, delimiter=',', usecols=(6)).astype(np.int64)
+        segmentation_classes[segmentation_classes == 6] = 0
+        segmentation_classes[segmentation_classes == 26] = 2
+        point_cloud = point_cloud[segmentation_classes != 9]
+        segmentation_classes = segmentation_classes[segmentation_classes != 9]
+
+        if number_of_points:
+            sampling_indices = np.random.choice(point_cloud.shape[0], number_of_points)
+            point_cloud = point_cloud[sampling_indices, :]
+            segmentation_classes = segmentation_classes[sampling_indices]
+
+
+
+
+        segmentation_classes = torch.from_numpy(segmentation_classes)
+        point_cloud = torch.from_numpy(point_cloud)
+
+        return point_cloud, segmentation_classes
+
+class AHN3Datasetv1(data.Dataset):
+    NUM_CLASSIFICATION_CLASSES = 1
+    NUM_SEGMENTATION_CLASSES = 3
+
+    POINT_DIMENSION = 6
+
+    def __init__(self, dataset_folder, number_of_points=2048, task='classification', train=True):
+
+        #define the dataset folder where the dataset is in first with 'dataset_folder'
+        # 'ahn3' is the dataset folder
+        self.dataset_folder = dataset_folder
+        self.number_of_points = number_of_points
+        assert task in ['segmentation']
+        self.task = task
+        self.train = train
+        
+        # category_file = os.path.join(self.dataset_folder, 'mappingtocategory.txt')
+
+        # print(category_file)
+        # print('--------')
+
+        # self.folders_to_classes_mapping = {}
+        # self.segmentation_classes_offset = {}
+
+        # with open(category_file, 'r') as fid:
+        #     reader = csv.reader(fid, delimiter='\t')
+        #     # print(reader)
+        #     # print('-------')
+
+
+        #     offset_seg_class = 0
+        #     for k, row in enumerate(reader):
+        #         self.folders_to_classes_mapping[row[1]] = k
+        #         # print('folders to classes mapping is')
+        #         # print(self.folders_to_classes_mapping)
+        #         self.segmentation_classes_offset[row[1]] = offset_seg_class
+        #         # print('segmentation classes offset is')
+        #         # print(self.segmentation_classes_offset)
+        #         #offset_seg_class += self.PER_CLASS_NUM_SEGMENTATION_CLASSES[row[0]]
+        
+        if self.train:
+            filelist = os.path.join(self.dataset_folder, 'train_test_split', 'shuffled_train_file_list.json')
+        else:
+            filelist = os.path.join(self.dataset_folder, 'train_test_split', 'shuffled_test_file_list.json')
+
+        with open(filelist, 'r') as fid:
+            filenames = json.load(fid)
+
+        self.files = [(f.split('/')[0], f.split('/')[1]) for f in filenames]
+
+    def __getitem__(self, index):
+        folder, file = self.files[index]
+        point_file = os.path.join(self.dataset_folder,
+                                  folder,
+                                  '%s.txt' % file)
+        # print(point_file)
+        segmentation_label_file = os.path.join(self.dataset_folder,
+                                               folder,
+                                               '%s.txt' % file)
+        # point_cloud_class = self.folders_to_classes_mapping[folder]
+        point_cloud_class = 0
+        if self.task == 'classification':
+            return self.prepare_data(point_file,
+                                     self.number_of_points,
+                                     point_cloud_class=point_cloud_class)
+        elif self.task == 'segmentation':
+            return self.prepare_data(point_file,
+                                     self.number_of_points,
+                                     point_cloud_class=point_cloud_class,
+                                     segmentation_label_file=segmentation_label_file,
+                                     segmentation_classes_offset=None)
+
+    def __len__(self):
+        return len(self.files)
+
+    
+    @staticmethod
+    def prepare_data(point_file,
+                     number_of_points=None,
+                     point_cloud_class=None,
+                     segmentation_label_file=None,
+                     segmentation_classes_offset=None):
+        point_cloud = np.loadtxt(point_file, delimiter=',', usecols=(0,1,2,3,4,5)).astype(np.float32)
+        segmentation_classes = np.loadtxt(point_file, delimiter=',', usecols=(6)).astype(np.int64)
         segmentation_classes[segmentation_classes == 6] = 0
         segmentation_classes[segmentation_classes == 26] = 2
         point_cloud = point_cloud[segmentation_classes != 9]
