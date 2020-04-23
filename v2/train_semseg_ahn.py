@@ -21,8 +21,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
 
-
-classes = ['ceiling','floor','wall','beam','column','window','door','table','chair','sofa','bookcase','board','clutter']
 classes = ['building', 'vegetation', 'ground']
 
 class2label = {cls: i for i,cls in enumerate(classes)}
@@ -42,7 +40,7 @@ def parse_args():
     parser.add_argument('--optimizer', type=str, default='Adam', help='Adam or SGD [default: Adam]')
     parser.add_argument('--log_dir', type=str, default=None, help='Log path [default: None]')
     parser.add_argument('--decay_rate', type=float, default=1e-4, help='weight decay [default: 1e-4]')
-    parser.add_argument('--npoint', type=int,  default=4096, help='Point Number [default: 4096]')
+    parser.add_argument('--npoint', type=int,  default=1024, help='Point Number [default: 4096]')
     parser.add_argument('--step_size', type=int,  default=10, help='Decay step for lr decay [default: every 10 epochs]')
     parser.add_argument('--lr_decay', type=float,  default=0.7, help='Decay rate for lr decay [default: 0.7]')
     parser.add_argument('--test_area', type=int, default=5, help='Which area to use for test, option: 1-6 [default: 5]')
@@ -55,6 +53,7 @@ def main(args):
         print(str)
 
     '''HYPER PARAMETER'''
+    # os.environ["CUDA_VISIBLE_DEVICES"] = ''
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
     '''CREATE DIR'''
@@ -91,12 +90,12 @@ def main(args):
     BATCH_SIZE = args.batch_size
 
     print("start loading training data ...")
-    TRAIN_DATASET = AHN3Dataset(split='train', data_root=root, num_point=NUM_POINT, test_area=args.test_area, block_size=1.0, sample_rate=1.0, transform=None)
+    TRAIN_DATASET = AHN3Dataset(split='train', data_root=root, num_point=NUM_POINT, test_area=args.test_area, block_size=10.0, sample_rate=1.0, transform=None)
     print("start loading test data ...")
-    TEST_DATASET = AHN3Dataset(split='test', data_root=root, num_point=NUM_POINT, test_area=args.test_area, block_size=1.0, sample_rate=1.0, transform=None)
+    TEST_DATASET = AHN3Dataset(split='test', data_root=root, num_point=NUM_POINT, test_area=args.test_area, block_size=10.0, sample_rate=1.0, transform=None)
     trainDataLoader = torch.utils.data.DataLoader(TRAIN_DATASET, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True, drop_last=True, worker_init_fn = lambda x: np.random.seed(x+int(time.time())))
     testDataLoader = torch.utils.data.DataLoader(TEST_DATASET, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=True)
-    weights = torch.Tensor(TRAIN_DATASET.labelweights).cuda()
+    weights = torch.Tensor(TRAIN_DATASET.labelweights)
 
     log_string("The number of training data is: %d" % len(TRAIN_DATASET))
     log_string("The number of test data is: %d" % len(TEST_DATASET))
@@ -106,8 +105,8 @@ def main(args):
     shutil.copy('models/%s.py' % args.model, str(experiment_dir))
     shutil.copy('models/pointnet_util.py', str(experiment_dir))
 
-    classifier = MODEL.get_model(NUM_CLASSES).cuda()
-    criterion = MODEL.get_loss().cuda()
+    classifier = MODEL.get_model(NUM_CLASSES)
+    criterion = MODEL.get_loss()
 
     def weights_init(m):
         classname = m.__class__.__name__
@@ -170,10 +169,15 @@ def main(args):
         for i, data in tqdm(enumerate(trainDataLoader), total=len(trainDataLoader), smoothing=0.9):
             points, target = data
             points = points.data.numpy()
+            # print('point shape is: ', points.shape)
             points[:,:, :3] = provider.rotate_point_cloud_z(points[:,:, :3])
+            # print('point shape is: ', points.shape)
             points = torch.Tensor(points)
-            points, target = points.float().cuda(),target.long().cuda()
+            # print('point shape is: ', points.shape)
+            points, target = points.float(),target.long()
+            # print('point shape is: ', points.shape)
             points = points.transpose(2, 1)
+            # print('point shape is: ', points.shape)
             optimizer.zero_grad()
             classifier = classifier.train()
             seg_pred, trans_feat = classifier(points)
@@ -218,7 +222,7 @@ def main(args):
                 points, target = data
                 points = points.data.numpy()
                 points = torch.Tensor(points)
-                points, target = points.float().cuda(), target.long().cuda()
+                points, target = points.float(), target.long()
                 points = points.transpose(2, 1)
                 classifier = classifier.eval()
                 seg_pred, trans_feat = classifier(points)

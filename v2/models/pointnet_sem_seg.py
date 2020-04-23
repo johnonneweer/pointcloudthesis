@@ -10,7 +10,7 @@ class get_model(nn.Module):
     def __init__(self, num_class, with_rgb=True):
         super(get_model, self).__init__()
         if with_rgb:
-            channel = 6
+            channel = 9
         else:
             channel = 3
         self.k = num_class

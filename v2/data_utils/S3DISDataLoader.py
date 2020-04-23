@@ -3,28 +3,27 @@ import numpy as np
 from torch.utils.data import Dataset
 
 
-class AHN3Dataset(Dataset):
-    def __init__(self, split='train', data_root='trainval_fullarea', num_point=4096, test_area=5, block_size=10.0, sample_rate=1.0, transform=None, area='almere'):
+class S3DISDataset(Dataset):
+    def __init__(self, split='train', data_root='trainval_fullarea', num_point=4096, test_area=5, block_size=1.0, sample_rate=1.0, transform=None):
         super().__init__()
         self.num_point = num_point
         self.block_size = block_size
         self.transform = transform
-        self.area = '_'
         rooms = sorted(os.listdir(data_root))
-        rooms = [room for room in rooms if self.area in room]
+        rooms = [room for room in rooms if 'Area_' in room]
         if split == 'train':
-            rooms_split = [room for room in rooms if 'pijp' in room]
+            rooms_split = [room for room in rooms if not 'Area_{}'.format(test_area) in room]
         else:
-            rooms_split = [room for room in rooms if 'utrecht' in room]
+            rooms_split = [room for room in rooms if 'Area_{}'.format(test_area) in room]
         self.room_points, self.room_labels = [], []
         self.room_coord_min, self.room_coord_max = [], []
         num_point_all = []
-        labelweights = np.zeros(3)
+        labelweights = np.zeros(13)
         for room_name in rooms_split:
             room_path = os.path.join(data_root, room_name)
             room_data = np.load(room_path)  # xyzrgbl, N*7
             points, labels = room_data[:, 0:6], room_data[:, 6]  # xyzrgb, N*6; l, N
-            tmp, _ = np.histogram(labels, range(4))
+            tmp, _ = np.histogram(labels, range(14))
             labelweights += tmp
             coord_min, coord_max = np.amin(points, axis=0)[:3], np.amax(points, axis=0)[:3]
             self.room_points.append(points), self.room_labels.append(labels)
@@ -53,8 +52,7 @@ class AHN3Dataset(Dataset):
             block_min = center - [self.block_size / 2.0, self.block_size / 2.0, 0]
             block_max = center + [self.block_size / 2.0, self.block_size / 2.0, 0]
             point_idxs = np.where((points[:, 0] >= block_min[0]) & (points[:, 0] <= block_max[0]) & (points[:, 1] >= block_min[1]) & (points[:, 1] <= block_max[1]))[0]
-            # print("point index.size is: " , point_idxs.size)
-            if point_idxs.size > 512:
+            if point_idxs.size > 1024:
                 break
 
         if point_idxs.size >= self.num_point:
@@ -172,7 +170,7 @@ if __name__ == '__main__':
     data_root = '/data/yxu/PointNonLocal/data/stanford_indoor3d/'
     num_point, test_area, block_size, sample_rate = 4096, 5, 1.0, 0.01
 
-    point_data = AHN3Dataset(split='train', data_root=data_root, num_point=num_point, test_area=test_area, block_size=block_size, sample_rate=sample_rate, transform=None)
+    point_data = S3DISDataset(split='train', data_root=data_root, num_point=num_point, test_area=test_area, block_size=block_size, sample_rate=sample_rate, transform=None)
     print('point data size:', point_data.__len__())
     print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
     print('point label 0 shape:', point_data.__getitem__(0)[1].shape)

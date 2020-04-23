@@ -115,6 +115,8 @@ def train(dataset,
             loss.backward()
             optimizer.step()
             preds = preds.data.max(1)[1]
+            print(targets)
+            print(preds)
             corrects = preds.eq(targets.data).cpu().sum()
             if task == 'classification':
                 accuracy = corrects.item() / float(batch_size)
