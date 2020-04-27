@@ -167,6 +167,7 @@ def main(args):
         total_seen = 0
         loss_sum = 0
         for i, data in tqdm(enumerate(trainDataLoader), total=len(trainDataLoader), smoothing=0.9):
+            print(i)
             points, target = data
             points = points.data.numpy()
             # print('point shape is: ', points.shape)
