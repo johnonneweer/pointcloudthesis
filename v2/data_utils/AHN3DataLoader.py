@@ -13,9 +13,10 @@ class AHN3Dataset(Dataset):
         rooms = sorted(os.listdir(data_root))
         rooms = [room for room in rooms if self.area in room]
         if split == 'train':
-            rooms_split = [room for room in rooms if 'pijp' in room]
+            rooms_split = [room for room in rooms if 'train' in room]
+            print(len(rooms_split))
         else:
-            rooms_split = [room for room in rooms if 'utrecht' in room]
+            rooms_split = [room for room in rooms if 'test' in room]
         self.room_points, self.room_labels = [], []
         self.room_coord_min, self.room_coord_max = [], []
         num_point_all = []
@@ -44,6 +45,7 @@ class AHN3Dataset(Dataset):
 
     def __getitem__(self, idx):
         room_idx = self.room_idxs[idx]
+        print('room_index is: ', str(room_idx))
         points = self.room_points[room_idx]   # N * 6
         labels = self.room_labels[room_idx]   # N
         N_points = points.shape[0]
@@ -82,7 +84,7 @@ class AHN3Dataset(Dataset):
 
 class ScannetDatasetWholeScene():
     # prepare to give prediction on each points
-    def __init__(self, root, block_points=4096, split='test', test_area=5, stride=0.5, block_size=1.0, padding=0.001):
+    def __init__(self, root, block_points=2048, split='test', test_area=5, stride=5, block_size=10, padding=0.001):
         self.block_points = block_points
         self.block_size = block_size
         self.padding = padding
@@ -107,7 +109,7 @@ class ScannetDatasetWholeScene():
             self.room_coord_min.append(coord_min), self.room_coord_max.append(coord_max)
         assert len(self.scene_points_list) == len(self.semantic_labels_list)
 
-        labelweights = np.zeros(13)
+        labelweights = np.zeros(3)
         for seg in self.semantic_labels_list:
             tmp, _ = np.histogram(seg, range(14))
             self.scene_points_num.append(seg.shape[0])
