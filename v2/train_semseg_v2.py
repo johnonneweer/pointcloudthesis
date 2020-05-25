@@ -43,7 +43,8 @@ def parse_args():
     parser.add_argument('--npoint', type=int,  default=1024, help='Point Number [default: 4096]')
     parser.add_argument('--step_size', type=int,  default=10, help='Decay step for lr decay [default: every 10 epochs]')
     parser.add_argument('--lr_decay', type=float,  default=0.7, help='Decay rate for lr decay [default: 0.7]')
-    parser.add_argument('--test_area', type=int, default=5, help='Which area to use for test, option: 1-6 [default: 5]')
+    parser.add_argument('--test_area', type=str, default='_', help='Which area to use for test, option: 1-6 [default: all]')
+    parser.add_argument('--train_area', type=str, default='_', help='Which area to use for test, option: 1-6 [default: all]')
 
     return parser.parse_args()
 
@@ -58,7 +59,8 @@ def main(args):
 
     '''CREATE DIR'''
     timestr = str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))
-    experiment_dir = Path('content/My Drive/thesis/log/')
+    experiment_dir = Path('/content/gdrive/My Drive/thesis/log/')
+    # experiment_dir = Path('./log/')
     experiment_dir.mkdir(exist_ok=True)
     experiment_dir = experiment_dir.joinpath('sem_seg')
     experiment_dir.mkdir(exist_ok=True)
@@ -90,7 +92,7 @@ def main(args):
     BATCH_SIZE = args.batch_size
 
     print("start loading training data ...")
-    TRAIN_DATASET = AHN3Dataset(split='train', data_root=root, num_point=NUM_POINT, test_area=args.test_area, block_size=10.0, sample_rate=1.0, transform=None)
+    TRAIN_DATASET = AHN3Dataset(split='train', data_root=root, num_point=NUM_POINT, train_area=args.train_area, block_size=10.0, sample_rate=1.0, transform=None)
     print("start loading test data ...")
     TEST_DATASET = AHN3Dataset(split='test', data_root=root, num_point=NUM_POINT, test_area=args.test_area, block_size=10.0, sample_rate=1.0, transform=None)
     trainDataLoader = torch.utils.data.DataLoader(TRAIN_DATASET, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True, drop_last=True, worker_init_fn = lambda x: np.random.seed(x+int(time.time())))
@@ -192,7 +194,7 @@ def main(args):
 
         if epoch % 5 == 0:
             logger.info('Save model...')
-            savepath = str(checkpoints_dir) + '/model.pth'
+            savepath = str(checkpoints_dir) + '/model_' + str(epoch) + '.pth'
             log_string('Saving at %s' % savepath)
             state = {
                 'epoch': epoch,

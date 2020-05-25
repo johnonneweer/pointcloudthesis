@@ -4,18 +4,31 @@ from torch.utils.data import Dataset
 
 
 class AHN3Dataset(Dataset):
-    def __init__(self, split='train', data_root='trainval_fullarea', num_point=4096, test_area=5, block_size=10.0, sample_rate=1.0, transform=None, area='almere'):
+    def __init__(self, split='train', data_root='trainval_fullarea', num_point=4096, test_area='_', train_area='_', block_size=10.0, sample_rate=1.0, transform=None, area='almere'):
         super().__init__()
         self.num_point = num_point
         self.block_size = block_size
         self.transform = transform
         self.area = '_'
+        if split != 'train':
+            train_area = test_area
+        if train_area == 'ams':
+            with open('ams_test.txt') as f:
+                test_list = [line.rstrip('\n') for line in f]
+        elif train_area =='azo':
+            with open('azo_test.txt') as f:
+                test_list = [line.rstrip('\n') for line in f]
+        else:
+            test_list = []
         rooms = sorted(os.listdir(data_root))
         rooms = [room for room in rooms if self.area in room]
+        print(train_area)
         if split == 'train':
-            rooms_split = [room for room in rooms if 'pijp' in room]
+            rooms_split = list(set([room for room in rooms if train_area in room]) - set(test_list))
         else:
-            rooms_split = [room for room in rooms if 'utrecht' in room]
+            # rooms_split = [room for room in rooms if test_area in room]
+            rooms_split = test_list
+        print(len(rooms_split))
         self.room_points, self.room_labels = [], []
         self.room_coord_min, self.room_coord_max = [], []
         num_point_all = []
