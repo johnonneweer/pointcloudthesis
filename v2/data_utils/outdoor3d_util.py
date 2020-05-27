@@ -8,6 +8,7 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 sys.path.append(BASE_DIR)
 
 DATA_PATH = os.path.join(ROOT_DIR, 'data','AHN3')
+DATA_PATH = r"C:\Users\Sustainables\Documents\Thesis\Data\AHN3"
 g_classes = [x.rstrip() for x in open(os.path.join(BASE_DIR, 'meta/class_namesv2.txt'))]
 g_class2label = {cls: i for i,cls in enumerate(g_classes)}
 g_class2color = {'building':	[0,255,0],
@@ -67,7 +68,7 @@ def collect_point_label(anno_path, out_filename, file_format='txt'):
             # print('_')
             # print(f.split('.')[0].split('/')[-1])
             print('.npy')
-            save_to = out_filename + '_' + f.split('.')[0].split('/')[-1]+'.npy'
+            save_to = f.split('.')[0].split('\\')[-1]+'.npy'
             print(save_to)
             np.save(save_to, data_label)
             # print('pre-next')

@@ -102,17 +102,14 @@ class PointNetEncoder(nn.Module):
 
     def forward(self, x):
         B, D, N = x.size()
-        # print(x.size())
         trans = self.stn(x)
-        # print(trans.size())
         x = x.transpose(2, 1)
-        # print(x.size())
 
-        # if D >3 :
-        #     x, feature = x.split(3,dim=2)
-        # x = torch.bmm(x, trans)
-        # if D > 3:
-        #     x = torch.cat([x,feature],dim=2)
+        if D >3 :
+            x, feature = x.split([3,D-3],dim=2)
+        x = torch.bmm(x, trans)
+        if D > 3:
+            x = torch.cat([x,feature],dim=2)
         x = x.transpose(2, 1)
         x = F.relu(self.bn1(self.conv1(x)))
 

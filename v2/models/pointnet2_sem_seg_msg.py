@@ -7,10 +7,10 @@ class get_model(nn.Module):
     def __init__(self, num_classes):
         super(get_model, self).__init__()
 
-        self.sa1 = PointNetSetAbstractionMsg(1024, [0.05, 0.1], [16, 32], 9, [[16, 16, 32], [32, 32, 64]])
-        self.sa2 = PointNetSetAbstractionMsg(256, [0.1, 0.2], [16, 32], 32+64, [[64, 64, 128], [64, 96, 128]])
-        self.sa3 = PointNetSetAbstractionMsg(64, [0.2, 0.4], [16, 32], 128+128, [[128, 196, 256], [128, 196, 256]])
-        self.sa4 = PointNetSetAbstractionMsg(16, [0.4, 0.8], [16, 32], 256+256, [[256, 256, 512], [256, 384, 512]])
+        self.sa1 = PointNetSetAbstractionMsg(512, [0.5, 0.75], [16, 32], 9, [[16, 16, 32], [32, 32, 64]])
+        self.sa2 = PointNetSetAbstractionMsg(128, [0.75, 1.25], [16, 32], 32+64, [[64, 64, 128], [64, 96, 128]])
+        self.sa3 = PointNetSetAbstractionMsg(32, [1.25, 2.5], [16, 32], 128+128, [[128, 196, 256], [128, 196, 256]])
+        self.sa4 = PointNetSetAbstractionMsg(8, [2.5, 5], [16, 32], 256+256, [[256, 256, 512], [256, 384, 512]])
         self.fp4 = PointNetFeaturePropagation(512+512+256+256, [256, 256])
         self.fp3 = PointNetFeaturePropagation(128+128+256, [256, 256])
         self.fp2 = PointNetFeaturePropagation(32+64+256, [256, 128])

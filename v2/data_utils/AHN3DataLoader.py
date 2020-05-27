@@ -23,6 +23,7 @@ class AHN3Dataset(Dataset):
         rooms = sorted(os.listdir(data_root))
         rooms = [room for room in rooms if self.area in room]
         print(train_area)
+
         if split == 'train':
             rooms_split = list(set([room for room in rooms if train_area in room]) - set(test_list))
         else:
@@ -94,7 +95,7 @@ class AHN3Dataset(Dataset):
     def __len__(self):
         return len(self.room_idxs)
 
-class ScannetDatasetWholeScene():
+class AHNDatasetWholeScene():
     # prepare to give prediction on each points
     def __init__(self, root, block_points=2048, split='test', test_area=5, stride=5, block_size=10, padding=0.001):
         self.block_points = block_points
@@ -106,9 +107,9 @@ class ScannetDatasetWholeScene():
         self.scene_points_num = []
         assert split in ['train', 'test']
         if self.split == 'train':
-            self.file_list = [d for d in os.listdir(root) if d.find('Area_%d' % test_area) is -1]
+            self.file_list = [d for d in os.listdir(root) if test_area in d]
         else:
-            self.file_list = [d for d in os.listdir(root) if d.find('Area_%d' % test_area) is not -1]
+            self.file_list = [d for d in os.listdir(root) if test_area in d]
         self.scene_points_list = []
         self.semantic_labels_list = []
         self.room_coord_min, self.room_coord_max = [], []
@@ -123,7 +124,7 @@ class ScannetDatasetWholeScene():
 
         labelweights = np.zeros(3)
         for seg in self.semantic_labels_list:
-            tmp, _ = np.histogram(seg, range(14))
+            tmp, _ = np.histogram(seg, range(4))
             self.scene_points_num.append(seg.shape[0])
             labelweights += tmp
         labelweights = labelweights.astype(np.float32)
@@ -137,6 +138,8 @@ class ScannetDatasetWholeScene():
         coord_min, coord_max = np.amin(points, axis=0)[:3], np.amax(points, axis=0)[:3]
         grid_x = int(np.ceil(float(coord_max[0] - coord_min[0] - self.block_size) / self.stride) + 1)
         grid_y = int(np.ceil(float(coord_max[1] - coord_min[1] - self.block_size) / self.stride) + 1)
+        grid_x = 1 if grid_x <= 0 else grid_x
+        grid_y = 1 if grid_y <= 0 else grid_y
         data_room, label_room, sample_weight, index_room = np.array([]), np.array([]), np.array([]),  np.array([])
         for index_y in range(0, grid_y):
             for index_x in range(0, grid_x):
@@ -151,6 +154,7 @@ class ScannetDatasetWholeScene():
                                 points[:, 1] <= e_y + self.padding))[0]
                 if point_idxs.size == 0:
                     continue
+          
                 num_batch = int(np.ceil(point_idxs.size / self.block_points))
                 point_size = int(num_batch * self.block_points)
                 replace = False if (point_size - point_idxs.size <= point_idxs.size) else True

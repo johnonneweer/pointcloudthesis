@@ -4,7 +4,7 @@ Date: Nov 2019
 """
 import argparse
 import os
-from data_utils.S3DISDataLoader import AHNDatasetWholeScene
+from data_utils.AHN3DataLoader import AHNDatasetWholeScene
 from data_utils.indoor3d_util import g_label2color
 import torch
 import logging
@@ -54,8 +54,10 @@ def main(args):
 
     '''HYPER PARAMETER'''
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-    experiment_dir = 'log/sem_seg/' + args.log_dir
-    visual_dir = experiment_dir + '/visual/'
+    experiment_dir = Path('/content/gdrive/My Drive/thesis/log/')
+    experiment_dir = experiment_dir.joinpath('sem_seg')
+    experiment_dir = experiment_dir.joinpath(args.log_dir)
+    visual_dir = experiment_dir.joinpath('/visual/')
     visual_dir = Path(visual_dir)
     visual_dir.mkdir(exist_ok=True)
 
@@ -71,17 +73,17 @@ def main(args):
     log_string('PARAMETER ...')
     log_string(args)
 
-    NUM_CLASSES = 13
+    NUM_CLASSES = 3
     BATCH_SIZE = args.batch_size
     NUM_POINT = args.num_point
 
-    root = 'data/stanford_indoor3d/'
+    root = 'data/ahn_set/'
 
-    TEST_DATASET_WHOLE_SCENE = ScannetDatasetWholeScene(root, split='test', test_area=args.test_area, block_points=NUM_POINT)
+    TEST_DATASET_WHOLE_SCENE = AHNDatasetWholeScene(root, split='test', test_area=args.test_area, block_points=NUM_POINT)
     log_string("The number of test data is: %d" %  len(TEST_DATASET_WHOLE_SCENE))
 
     '''MODEL LOADING'''
-    model_name = os.listdir(experiment_dir+'/logs')[0].split('.')[0]
+    model_name = os.listdir(experiment_dir.joinpath('logs'))[0].split('.')[0]
     MODEL = importlib.import_module(model_name)
     classifier = MODEL.get_model(NUM_CLASSES).cuda()
     checkpoint = torch.load(str(experiment_dir) + '/checkpoints/best_model.pth')
@@ -180,7 +182,7 @@ def main(args):
         iou_per_class_str = '------- IoU --------\n'
         for l in range(NUM_CLASSES):
             iou_per_class_str += 'class %s, IoU: %.3f \n' % (
-                seg_label_to_cat[l] + ' ' * (14 - len(seg_label_to_cat[l])),
+                seg_label_to_cat[l] + ' ' * (4 - len(seg_label_to_cat[l])),
                 total_correct_class[l] / float(total_iou_deno_class[l]))
         log_string(iou_per_class_str)
         log_string('eval point avg class IoU: %f' % np.mean(IoU))

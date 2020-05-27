@@ -14,13 +14,13 @@ import numpy as np
 import time
 from sklearn.model_selection import train_test_split
 
-root = 'data/ahn3_set/'
+root = 'data/ahn_set/'
 rooms = sorted(os.listdir(root))
 roomz = [room for room in rooms if 'azo' in room]
 rooms = [room for room in rooms if 'ams' in room]
 
-xTrain, xTest, yTrain, yTest = train_test_split(rooms, rooms, test_size = 0.2, random_state = 0, shuffle=True)
-aTrain, aTest, bTrain, bTest = train_test_split(roomz, roomz, test_size = 0.2, random_state = 4, shuffle=True)
+# xTrain, xTest, yTrain, yTest = train_test_split(rooms, rooms, test_size = 0.2, random_state = 0, shuffle=True)
+# aTrain, aTest, bTrain, bTest = train_test_split(roomz, roomz, test_size = 0.2, random_state = 4, shuffle=True)
 
 # with open('ams_test.txt', 'w') as f:
 #     for s in xTest:
@@ -29,8 +29,13 @@ aTrain, aTest, bTrain, bTest = train_test_split(roomz, roomz, test_size = 0.2, r
 # with open('avo_test.txt', 'w') as f:
 #     for s in aTest:
 #         f.write(str(s) + '\n')
-
-# sys.exit()
+rooms = sorted(os.listdir(root))
+file = 'utr_138100_455525.npy'
+rooms = [room for room in rooms if file in room]
+for room in rooms:
+    cloud = np.load(root + room)
+    print(cloud.shape)
+sys.exit()
 
 TRAIN_DATASET = AHN3Dataset(split='train', data_root=root, num_point=2048, train_area='azo', block_size=10.0, sample_rate=0.1, transform=None)
 

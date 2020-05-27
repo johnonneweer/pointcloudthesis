@@ -85,7 +85,7 @@ def snip_tiles(adress, file_path, output_directory, seg, marge):
         command.append(output_name)
         
         command_line = " ".join([str(elem) for elem in command])
-        # os.system(command_line)
+        os.system(command_line)
 
 import numpy as np
 
@@ -101,9 +101,9 @@ for j in range(x):
         t[1][j][i] = i
 tiles = np.stack((t[0],t[1]), axis=2).reshape(1,x*x,2).astype(int)[0]*tile_size
 
-files = ['S_25GN1.LAZ', 'S_25GZ2.LAZ', 'S_31HZ2.LAZ', 'S_26AZ2.LAZ', 'S_20AN1.LAZ']
+files = ['S_25GN1.LAZ', 'S_25GZ2.LAZ', 'S_31HZ2.LAZ', 'S_26CN2.LAZ', 'S_20AN1.LAZ']
 areas = ['ams','azo', 'utr', 'alm', 'hoo']
-coordinates = [[120900, 484590],[127400,478300],[137150,454750],[144840,486000],[140250, 522500]]
+coordinates = [[120900, 484590],[127400,478300],[137150,454750],[145040,486000],[140250, 522500]]
 
 tiles_2 = np.zeros((len(coordinates),tiles.shape[0],tiles.shape[1])).astype(int)
 
@@ -112,8 +112,13 @@ for i in range(len(coordinates)):
 
 total = list(zip(areas,files,tiles_2)) #0 area 1 file 2 coordinate array
 print(len(total[0][2]))
+
+total = [total[3]]
+print(total[0])
+# sys.exit()
 # snip_files(adress, file_path, output_directory, seg, marge)
 
+os.chdir(r"C:\Users\Sustainables\Documents\Thesis\LAStools\bin")
 
 for i in range(len(total)):
     file_path = r"C:\Users\Sustainables\Documents\Thesis"
