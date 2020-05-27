@@ -106,10 +106,16 @@ class AHNDatasetWholeScene():
         self.stride = stride
         self.scene_points_num = []
         assert split in ['train', 'test']
+        if test_area == 'ams_v':
+            with open('ams_test.txt') as f:
+                test_list = [line.rstrip('\n') for line in f]
+        elif test_area =='azo_v':
+            with open('azo_test.txt') as f:
+                test_list = [line.rstrip('\n') for line in f]
         if self.split == 'train':
             self.file_list = [d for d in os.listdir(root) if test_area in d]
         else:
-            self.file_list = [d for d in os.listdir(root) if test_area in d]
+            self.file_list = list(set([d for d in os.listdir(root) if test_area in d]) - set(test_list))
         self.scene_points_list = []
         self.semantic_labels_list = []
         self.room_coord_min, self.room_coord_max = [], []
