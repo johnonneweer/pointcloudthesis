@@ -158,10 +158,11 @@ def main(args):
             log_string('Mean IoU of %s: %.4f' % (scene_id[batch_idx], tmp_iou))
             print('----------------------------')
 
+            
             filename = os.path.join(visual_dir, scene_id[batch_idx] + '.txt')
             with open(filename, 'w') as pl_save:
                 for i in pred_label:
-                    pl_save.write(str(int(i)) + '\n')
+                    pl_save.write(str(int(i))+','+str(int(whole_scene_label)) + '\n')
                 pl_save.close()
             for i in range(whole_scene_label.shape[0]):
                 color = g_label2color[pred_label[i]]
