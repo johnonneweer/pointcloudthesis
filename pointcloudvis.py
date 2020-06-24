@@ -16,9 +16,9 @@ min_x = np.zeros(len(files))
 min_y = np.zeros(len(files))
 max_x = np.zeros(len(files))
 max_y = np.zeros(len(files))
-filename = np.zeros(len(files)).astype(str)
+# filename = np.zeros(len(files)).astype(str)
 fileclass = np.zeros(len(files)).astype(str)
-
+filename = []
 
 e = 0
 for f in files:
@@ -28,7 +28,7 @@ for f in files:
     min_y[e] = np.min(data[:,1])
     max_x[e] = np.max(data[:,0])
     max_y[e] = np.max(data[:,1])
-    filename[e] = f
+    filename.append[f]
     if 'building' in f:
         if 'roof' in f:
             if 'window' in f:
