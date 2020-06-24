@@ -4,11 +4,21 @@ import pandas as pd
 import numpy as np
 import csv
 
+
 from pathlib import Path
 dirpath = os.getcwd()
 # print(dirpath)
 dirpath = Path('/Users/john/AI/Thesis/Data')
+path = os.path.dirname(os.path.abspath(__file__))
+data_root = 'data/dub'
+tile_root = 'tse'
+
+dirpath = os.path.join(path, Path(data_root), Path(tile_root))
+statpath = Path(os.path.join(dirpath, 'stats'))
+statpath.mkdir(exist_ok=True)
+
 files = os.listdir(dirpath)
+
 # print(files)
 files = sorted([f for f in files if '.txt' in f])
 
@@ -16,19 +26,25 @@ min_x = np.zeros(len(files))
 min_y = np.zeros(len(files))
 max_x = np.zeros(len(files))
 max_y = np.zeros(len(files))
-filename = np.zeros(len(files)).astype(str)
+# filename = np.zeros(len(files)).astype(str)
 fileclass = np.zeros(len(files)).astype(str)
-
+filename = []
 
 e = 0
 for f in files:
     print(f)
     data = np.loadtxt(os.path.join(dirpath, f), skiprows=1, delimiter=',', usecols=(0,1)).astype(np.float32)
-    min_x[e] = np.min(data[:,0])
-    min_y[e] = np.min(data[:,1])
-    max_x[e] = np.max(data[:,0])
-    max_y[e] = np.max(data[:,1])
-    filename[e] = f
+    try:
+        min_x[e] = np.min(data[:,0])
+        min_y[e] = np.min(data[:,1])
+        max_x[e] = np.max(data[:,0])
+        max_y[e] = np.max(data[:,1])
+    except:
+        min_x[e] = np.min(data[0])
+        min_y[e] = np.min(data[1])
+        max_x[e] = np.max(data[0])
+        max_y[e] = np.max(data[1])
+    filename.append(f)
     if 'building' in f:
         if 'roof' in f:
             if 'window' in f:
@@ -79,7 +95,7 @@ print(np.min(min_y))
 print(np.max(max_y))
 print(np.max(max_y) - np.min(min_y))
 
-statpath = os.path.join(dirpath, 'stats')
+
 printname = os.path.join(statpath, 'min_x.txt')
 with open(printname, 'w') as saver:
     print(min_x)
@@ -133,7 +149,7 @@ from mpl_toolkits.mplot3d import Axes3D
 #DATA
 
 data = []
-for f in all_files:
+for f in files:
     frame = pd.read_csv(f)
     frame['filename'] = os.path.basename(f)
     data.append(frame)
