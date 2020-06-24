@@ -4,7 +4,7 @@ Date: Nov 2019
 """
 import argparse
 import os
-from data_utils.AHN3DataLoader import AHN3Dataset
+from data_utils.DublinDataLoader import DublinDataset
 import torch
 import datetime
 import logging
@@ -43,7 +43,7 @@ def parse_args():
     parser.add_argument('--npoint', type=int,  default=1024, help='Point Number [default: 4096]')
     parser.add_argument('--step_size', type=int,  default=10, help='Decay step for lr decay [default: every 10 epochs]')
     parser.add_argument('--lr_decay', type=float,  default=0.7, help='Decay rate for lr decay [default: 0.7]')
-    parser.add_argument('--test_area', type=int, default=5, help='Which area to use for test, option: 1-6 [default: 5]')
+    parser.add_argument('--test_area', type=str, default='dubd', help='Which area to use for test, option: 1-6 [default: 5]')
 
     return parser.parse_args()
 
@@ -84,15 +84,15 @@ def main(args):
     log_string('PARAMETER ...')
     log_string(args)
 
-    root = 'data/ahn3_set/'
+    root = 'data/dubd/'
     NUM_CLASSES = 3
     NUM_POINT = args.npoint
     BATCH_SIZE = args.batch_size
 
     print("start loading training data ...")
-    TRAIN_DATASET = AHN3Dataset(split='train', data_root=root, num_point=NUM_POINT, test_area=args.test_area, train_area='ams', block_size=10.0, sample_rate=1.0, transform=None)
+    TRAIN_DATASET = DublinDataset(split='train', data_root=root, num_point=NUM_POINT, test_area=args.test_area, train_area='dubd', block_size=10.0, sample_rate=1.0, transform=None)
     print("start loading test data ...")
-    TEST_DATASET = AHN3Dataset(split='test', data_root=root, num_point=NUM_POINT, test_area=args.test_area, train_area='ams', block_size=10.0, sample_rate=1.0, transform=None)
+    TEST_DATASET = DublinDataset(split='test', data_root=root, num_point=NUM_POINT, test_area=args.test_area, train_area='dubd', block_size=10.0, sample_rate=1.0, transform=None)
     trainDataLoader = torch.utils.data.DataLoader(TRAIN_DATASET, batch_size=BATCH_SIZE, shuffle=True, num_workers=0, pin_memory=True, drop_last=True, worker_init_fn = lambda x: np.random.seed(x+int(time.time())))
     testDataLoader = torch.utils.data.DataLoader(TEST_DATASET, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=True)
     weights = torch.Tensor(TRAIN_DATASET.labelweights)
@@ -105,7 +105,7 @@ def main(args):
     shutil.copy('models/%s.py' % args.model, str(experiment_dir))
     shutil.copy('models/pointnet_util.py', str(experiment_dir))
 
-    classifier = MODEL.get_model(NUM_CLASSES)
+    classifier = MODEL.get_model(NUM_CLASSES, with_rgb=False)
     criterion = MODEL.get_loss()
 
     def weights_init(m):

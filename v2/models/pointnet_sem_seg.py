@@ -12,7 +12,7 @@ class get_model(nn.Module):
         if with_rgb:
             channel = 9
         else:
-            channel = 3
+            channel = 6
         self.k = num_class
         self.feat = PointNetEncoder(global_feat=False, feature_transform=True, channel=channel)
         self.conv1 = torch.nn.Conv1d(1088, 512, 1)
