@@ -19,14 +19,17 @@ class DublinDataset(Dataset):
         elif train_area =='dubs':
             with open('dubs_test.txt') as f:
                 test_list = [line.rstrip('\n') for line in f]
+        elif train_area =='dubs_norm':
+            with open('dubs_norm_test.txt') as f:
+                test_list = [line.rstrip('\n') for line in f]
+        elif train_area =='dubd_norm':
+            with open('dubd_norm_test.txt') as f:
+                test_list = [line.rstrip('\n') for line in f]
         else:
             test_list = []
-        rooms = sorted(os.listdir(data_root))
-        print(rooms)
         # rooms = [room for room in rooms if self.area in room]
         
         rooms = [os.path.join(path, name) for path, subdirs, files in os.walk(data_root) if 'tiles' in path for name in files if 'dub' in name]
-        print(rooms[0:10])
         if split == 'train':
             rooms_split = list(set(rooms) - set(test_list))
         else:
@@ -102,9 +105,9 @@ class DublinDataset(Dataset):
     def __len__(self):
         return len(self.room_idxs)
 
-class AHNDatasetWholeScene():
+class DublinDatasetWholeScene():
     # prepare to give prediction on each points
-    def __init__(self, root, block_points=2048, split='test', test_area=5, stride=5, block_size=10, padding=0.001):
+    def __init__(self, root, block_points=2048, split='test', downgrade=True, test_area=5, stride=5, block_size=10, padding=0.001):
         self.block_points = block_points
         self.block_size = block_size
         self.padding = padding
@@ -113,24 +116,36 @@ class AHNDatasetWholeScene():
         self.stride = stride
         self.scene_points_num = []
         assert split in ['train', 'test']
-        if test_area == 'ams_v':
-            with open('ams_test.txt') as f:
+        if test_area == 'dubd':
+            with open('dubd_test.txt') as f:
                 test_list = [line.rstrip('\n') for line in f]
-        elif test_area =='azo_v':
-            with open('azo_test.txt') as f:
+        elif test_area =='dubs':
+            with open('dubs_test.txt') as f:
                 test_list = [line.rstrip('\n') for line in f]
-        if self.split == 'train':
-            self.file_list = [d for d in os.listdir(root) if test_area in d]
+        elif test_area =='dubs_norm':
+            with open('dubs_norm_test.txt') as f:
+                test_list = [line.rstrip('\n') for line in f]
+        elif test_area =='dubd_norm':
+            with open('dubd_norm_test.txt') as f:
+                test_list = [line.rstrip('\n') for line in f]
         else:
-            self.file_list = list(set([d for d in os.listdir(root) if test_area in d]) - set(test_list))
+            test_list = []
+        if self.split == 'test':
+            self.file_list = test_list
+        else:
+            self.file_list = list(set([os.path.join(path, name) for path, subdirs, files in os.walk(data_root) if 'tiles' in path for name in files if 'dub' in name]) - set(test_list))
         self.scene_points_list = []
         self.semantic_labels_list = []
         self.room_coord_min, self.room_coord_max = [], []
         for file in self.file_list:
-            data = np.load(root + file)
-            points = data[:, :3]
-            self.scene_points_list.append(data[:, :6])
-            self.semantic_labels_list.append(data[:, 6])
+            data = np.load(file)
+            points, labels = data[:, 0:3], data[:, 3]  # xyzrgb, N*6; l, N
+            points = points[labels!=11]
+            labels = labels[labels!=11]
+            if downgrade:
+                labels = dub_downgrade_classes(labels)
+            self.scene_points_list.append(labels)
+            self.semantic_labels_list.append(labels)
             coord_min, coord_max = np.amin(points, axis=0)[:3], np.amax(points, axis=0)[:3]
             self.room_coord_min.append(coord_min), self.room_coord_max.append(coord_max)
         assert len(self.scene_points_list) == len(self.semantic_labels_list)
@@ -146,7 +161,7 @@ class AHNDatasetWholeScene():
 
     def __getitem__(self, index):
         point_set_ini = self.scene_points_list[index]
-        points = point_set_ini[:,:6]
+        points = point_set_ini[:,:3]
         labels = self.semantic_labels_list[index]
         coord_min, coord_max = np.amin(points, axis=0)[:3], np.amax(points, axis=0)[:3]
         grid_x = int(np.ceil(float(coord_max[0] - coord_min[0] - self.block_size) / self.stride) + 1)
@@ -181,7 +196,6 @@ class AHNDatasetWholeScene():
                 normlized_xyz[:, 2] = data_batch[:, 2] / coord_max[2]
                 data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
                 data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
-                data_batch[:, 3:6] /= 255.0
                 data_batch = np.concatenate((data_batch, normlized_xyz), axis=1)
                 label_batch = labels[point_idxs].astype(int)
                 batch_weight = self.labelweights[label_batch]
